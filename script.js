@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, { once: true });
     }
     
-    // Start playing a note and sustain it
+    // Start playing a note and sustain it with piano-like sound
     function startNote(note) {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -132,43 +132,107 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const frequency = noteFrequencies[note];
         
-        // Create oscillator
-        const oscillator = audioContext.createOscillator();
-        oscillator.type = 'sine'; // Sine wave - cleaner sound
-        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        // Create multiple oscillators for a richer sound
+        const oscillators = [];
+        const gainNodes = [];
         
-        // Create gain node for volume control and envelope
-        const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+        // Create main oscillator (fundamental frequency)
+        const mainOscillator = audioContext.createOscillator();
+        mainOscillator.type = 'triangle'; // Triangle wave for a warmer sound
+        mainOscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
         
-        // Connect nodes
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        // Create main gain node with piano-like envelope
+        const mainGain = audioContext.createGain();
+        mainGain.gain.setValueAtTime(0, audioContext.currentTime);
+        mainGain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01); // Fast attack
+        mainGain.gain.exponentialRampToValueAtTime(0.1, audioContext.currentTime + 0.2); // Initial decay
         
-        // Start oscillator
-        oscillator.start();
+        // Connect main oscillator
+        mainOscillator.connect(mainGain);
+        oscillators.push(mainOscillator);
+        gainNodes.push(mainGain);
         
-        // Store the oscillator and gain node
+        // Add a second oscillator one octave higher for brightness (but quieter)
+        const highOscillator = audioContext.createOscillator();
+        highOscillator.type = 'sine';
+        highOscillator.frequency.setValueAtTime(frequency * 2, audioContext.currentTime);
+        
+        const highGain = audioContext.createGain();
+        highGain.gain.setValueAtTime(0, audioContext.currentTime);
+        highGain.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.01);
+        highGain.gain.exponentialRampToValueAtTime(0.02, audioContext.currentTime + 0.2);
+        
+        highOscillator.connect(highGain);
+        oscillators.push(highOscillator);
+        gainNodes.push(highGain);
+        
+        // Create a low-pass filter for a warmer sound
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(5000, audioContext.currentTime);
+        filter.Q.setValueAtTime(1, audioContext.currentTime);
+        
+        // Create a small amount of reverb-like effect using a convolver
+        const convolver = audioContext.createConvolver();
+        const convolverGain = audioContext.createGain();
+        convolverGain.gain.value = 0.2; // Subtle reverb
+        
+        // Create a short impulse response for the convolver
+        const impulseLength = audioContext.sampleRate * 0.5; // 0.5 second impulse
+        const impulse = audioContext.createBuffer(2, impulseLength, audioContext.sampleRate);
+        
+        for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
+            const impulseData = impulse.getChannelData(channel);
+            for (let i = 0; i < impulseLength; i++) {
+                impulseData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (impulseLength * 0.3));
+            }
+        }
+        
+        convolver.buffer = impulse;
+        
+        // Create master gain for this note
+        const masterGain = audioContext.createGain();
+        masterGain.gain.value = 0.7;
+        
+        // Connect all nodes
+        gainNodes.forEach(gain => gain.connect(filter));
+        filter.connect(masterGain);
+        filter.connect(convolver);
+        convolver.connect(convolverGain);
+        convolverGain.connect(masterGain);
+        masterGain.connect(audioContext.destination);
+        
+        // Start all oscillators
+        oscillators.forEach(osc => osc.start());
+        
+        // Store all nodes for later stopping
         activeOscillators[note] = {
-            oscillator: oscillator,
-            gainNode: gainNode
+            oscillators: oscillators,
+            gainNodes: gainNodes,
+            masterGain: masterGain,
+            filter: filter
         };
     }
     
-    // Stop playing a note
+    // Stop playing a note with a piano-like release
     function stopNote(note) {
         if (activeOscillators[note]) {
-            const { oscillator, gainNode } = activeOscillators[note];
+            const { oscillators, gainNodes, masterGain } = activeOscillators[note];
             
-            // Fade out to avoid clicks
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
+            // Piano-like release - fade out over 0.5 seconds
+            masterGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
             
-            // Schedule oscillator to stop after fade out
+            // Schedule oscillators to stop after fade out
             setTimeout(() => {
-                oscillator.stop();
+                oscillators.forEach(osc => {
+                    try {
+                        osc.stop();
+                    } catch (e) {
+                        // Ignore errors if oscillator already stopped
+                    }
+                });
                 delete activeOscillators[note];
-            }, 60);
+            }, 600);
         }
     }
     
