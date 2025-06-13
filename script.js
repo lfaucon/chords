@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentChord = null;
     let selectedNotes = new Set();
     let useFlats = false; // Flag to determine whether to use flats or sharps
+    let startingNote = 0; // Index of the starting note for the keyboard (0 = C, 1 = C#, etc.)
     
     // Audio Context for sound generation
     let audioContext = null;
@@ -98,14 +99,63 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initialize Audio Context
         initAudio();
         
-        // Randomly set black key labels (sharp or flat)
-        setRandomKeyLabels();
+        // Shuffle the keyboard
+        shuffleKeyboard();
         
         // Add event listeners
         addEventListeners();
         
         // Generate a random chord on startup
         generateNewChord();
+    }
+    
+    // Shuffle the keyboard to start from a random note
+    function shuffleKeyboard() {
+        // Select a random starting note (0-11)
+        startingNote = Math.floor(Math.random() * 12);
+        
+        // Rearrange the keyboard keys
+        arrangeKeyboard();
+        
+        // Update key labels based on current notation preference
+        setKeyLabels();
+    }
+    
+    // Arrange the keyboard keys based on the starting note
+    function arrangeKeyboard() {
+        const keyboard = document.querySelector('.keyboard');
+        const keyboardContainer = document.querySelector('.keyboard-container');
+        
+        // Clear existing keyboard
+        keyboard.innerHTML = '';
+        
+        // Create keys in order starting from the selected starting note
+        for (let i = 0; i < 12; i++) {
+            const noteIndex = (startingNote + i) % 12;
+            const note = allNotes[noteIndex];
+            
+            // Determine if this is a white or black key
+            const isBlackKey = note.includes('#');
+            const keyClass = isBlackKey ? 'black-key' : 'white-key';
+            
+            // Create the key element
+            const keyElement = document.createElement('div');
+            keyElement.className = keyClass;
+            keyElement.setAttribute('data-note', note);
+            keyElement.textContent = note;
+            
+            // Add the key to the keyboard
+            keyboard.appendChild(keyElement);
+        }
+        
+        // Re-add event listeners to the new keys
+        const keys = document.querySelectorAll('.white-key, .black-key');
+        keys.forEach(key => {
+            key.addEventListener('click', function() {
+                const note = this.getAttribute('data-note');
+                toggleNoteSelection(note, this);
+            });
+        });
     }
     
     // Initialize Audio Context
@@ -243,10 +293,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Set labels for black keys based on current notation preference
-    function setRandomKeyLabels() {
-        const blackKeys = document.querySelectorAll('.black-key');
-        blackKeys.forEach(key => {
+    // Set labels for all keys based on current notation preference
+    function setKeyLabels() {
+        const allKeys = document.querySelectorAll('.white-key, .black-key');
+        allKeys.forEach(key => {
             const note = key.getAttribute('data-note');
             key.textContent = getDisplayName(note);
         });
@@ -263,19 +313,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear button
         clearBtn.addEventListener('click', clearSelection);
         
-        // Keyboard keys
-        keys.forEach(key => {
-            key.addEventListener('click', function() {
-                const note = this.getAttribute('data-note');
-                toggleNoteSelection(note, this);
-            });
-        });
+        // Keyboard keys - event listeners are now added in arrangeKeyboard()
     }
     
     // Generate a new random chord
     function generateNewChord() {
         // Clear previous selection, feedback, and stop all notes
         clearSelection();
+        
+        // Shuffle the keyboard
+        shuffleKeyboard();
         
         // Select random chord type
         const chordTypeNames = Object.keys(chordTypes);
@@ -295,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Update keyboard labels to match the current notation style
-        setRandomKeyLabels();
+        setKeyLabels();
         
         // Display the chord
         currentChordElement.textContent = `${getDisplayName(randomRoot)}${randomChordType}`;

@@ -95,10 +95,10 @@ button:hover {
     max-width: 700px;
     height: 200px;
     margin: 0 auto;
+    gap: 2px;
 }
 
 .white-key {
-    flex: 1;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 0 0 5px 5px;
@@ -107,10 +107,10 @@ button:hover {
     justify-content: center;
     padding-bottom: 10px;
     cursor: pointer;
-    z-index: 1;
     transition: background-color 0.2s;
     position: relative;
-    margin: 0 1px;
+    height: 100%;
+    width: 14%;
 }
 
 .white-key:hover {
@@ -122,12 +122,8 @@ button:hover {
 }
 
 .black-key {
-    position: absolute;
-    width: 8%;
-    height: 60%;
     background-color: #333;
     border-radius: 0 0 5px 5px;
-    z-index: 2;
     cursor: pointer;
     color: white;
     display: flex;
@@ -137,6 +133,10 @@ button:hover {
     transition: background-color 0.2s;
     font-size: 0.8em;
     text-align: center;
+    height: 67%;
+    width: calc(8% - 2px);
+    margin: 0px -4%;
+    z-index: 999;
 }
 
 .black-key:hover {
@@ -147,26 +147,6 @@ button:hover {
     background-color: #6699cc;
 }
 
-/* Position black keys */
-.black-key[data-note="C#"] {
-    left: 10.5%;
-}
-
-.black-key[data-note="D#"] {
-    left: 24.7%;
-}
-
-.black-key[data-note="F#"] {
-    left: 53%;
-}
-
-.black-key[data-note="G#"] {
-    left: 67.5%;
-}
-
-.black-key[data-note="A#"] {
-    left: 82%;
-}
 
 .selected-notes {
     text-align: center;
