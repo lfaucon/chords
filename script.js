@@ -42,16 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sharp and flat notation options for black keys
     const noteVariants = {
         'C': ['C'],
-        'C#': ['C#', 'Db'],
+        'C#': ['C#', 'D♭'],
         'D': ['D'],
-        'D#': ['D#', 'Eb'],
+        'D#': ['D#', 'E♭'],
         'E': ['E'],
         'F': ['F'],
-        'F#': ['F#', 'Gb'],
+        'F#': ['F#', 'G♭'],
         'G': ['G'],
-        'G#': ['G#', 'Ab'],
+        'G#': ['G#', 'A♭'],
         'A': ['A'],
-        'A#': ['A#', 'Bb'],
+        'A#': ['A#', 'B♭'],
         'B': ['B']
     };
     
@@ -74,24 +74,52 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Chord Types with their intervals (in semitones from the root) and notation
     const chordTypes = {
-        '': [0, 4, 7],             // Major Triad
-        'm': [0, 3, 7],            // Minor Triad
-        'dim': [0, 3, 6],          // Diminished Triad
-        'aug': [0, 4, 8],          // Augmented Triad
-        'sus2': [0, 2, 7],         // Suspended 2nd
-        'sus4': [0, 5, 7],         // Suspended 4th
-        'maj7': [0, 4, 7, 11],     // Major 7th
-        '7': [0, 4, 7, 10],        // Dominant 7th
-        'm7': [0, 3, 7, 10],       // Minor 7th
-        'mM7': [0, 3, 7, 11],      // Minor Major 7th
-        'm7b5': [0, 3, 6, 10],     // Half-Diminished
-        'dim7': [0, 3, 6, 9],      // Diminished 7th
-        'aug7': [0, 4, 8, 10],     // Augmented 7th
-        'augM7': [0, 4, 8, 11],    // Augmented Major 7th
-        '7sus2': [0, 2, 7, 10],    // 7th Suspended 2nd
-        '7sus4': [0, 5, 7, 10],    // 7th Suspended 4th
-        'maj7sus2': [0, 2, 7, 11], // Major 7th Suspended 2nd
-        'maj7sus4': [0, 5, 7, 11]  // Major 7th Suspended 4th
+        '': [0, 4, 7],              // Major Triad
+        '-': [0, 3, 7],             // Minor Triad
+        'dim': [0, 3, 6],           // Diminished Triad
+        'aug': [0, 4, 8],           // Augmented Triad
+        'sus2': [0, 2, 7],          // Suspended 2nd
+        'sus4': [0, 5, 7],          // Suspended 4th
+        'Δ': [0, 4, 7, 11],         // Major 7th
+        '7': [0, 4, 7, 10],         // Dominant 7th
+        '-7': [0, 3, 7, 10],        // Minor 7th
+        '-Δ': [0, 3, 7, 11],        // Minor Major 7th
+        'Ø7': [0, 3, 6, 10],         // Half-Diminished
+        'aug7': [0, 4, 8, 10],      // Augmented 7th
+        'augΔ': [0, 4, 8, 11],      // Augmented Major 7th
+        '7sus2': [0, 2, 7, 10],     // 7th Suspended 2nd
+        '7sus4': [0, 5, 7, 10],     // 7th Suspended 4th
+        'Δsus2': [0, 2, 7, 11],     // Major 7th Suspended 2nd
+        'Δsus4': [0, 5, 7, 11],     // Major 7th Suspended 4th
+        '6': [0, 4, 7, 9],          // Major 6th
+        '69': [0, 4, 7, 9, 14],     // Major 6th & 9th
+        '-6': [0, 3, 7, 9],         // Minor 6th
+        '9': [0, 4, 7, 10, 14],     // Dominant 9th
+        '-9': [0, 3, 7, 10, 14],    // Minor 9th
+        'Δ9': [0, 4, 7, 11, 14],    // Major 9th
+        '-Δ9': [0, 3, 7, 11, 14],   // Minor Major 9th
+        '11': [0, 4, 7, 10, 17],    // Dominant 11th
+        '-11': [0, 3, 7, 10, 17],   // Minor 11th
+        'Δ11': [0, 4, 7, 11, 17],   // Major 11th
+        '-Δ11': [0, 3, 7, 11, 17],  // Minor Major 11th
+        '13': [0, 4, 7, 10, 21],    // Dominant 13th
+        '-13': [0, 3, 7, 10, 21],   // Minor 13th
+        'Δ13': [0, 4, 7, 11, 21],   // Major 13th
+        '-Δ13': [0, 3, 7, 11, 21],  // Minor Major 13th
+        '7#9': [0, 4, 7, 10, 15],   // Dominant 7th with sharp 9
+        '7♭9': [0, 4, 7, 10, 13],   // Dominant 7th with flat 9
+        '7#11': [0, 4, 7, 10, 18],  // Dominant 7th with sharp 11
+        '7♭13': [0, 4, 7, 10, 20],  // Dominant 7th with flat 13
+        '-7#9': [0, 3, 7, 10, 15],  // Minor 7th with sharp 9
+        '-7♭9': [0, 3, 7, 10, 13],  // Minor 7th with flat 9
+        '-7#11': [0, 3, 7, 10, 18], // Minor 7th with sharp 11
+        '-7♭11': [0, 3, 7, 10, 16], // Minor 7th with flat 11
+        '-7#13': [0, 3, 7, 10, 22], // Minor 7th with sharp 13
+        '-7♭13': [0, 3, 7, 10, 20], // Minor 7th with flat 13
+        'Δ#9': [0, 4, 7, 11, 15],   // Major 7th with sharp 9
+        'Δ♭9': [0, 4, 7, 11, 13],   // Major 7th with flat 9
+        'Δ#11': [0, 4, 7, 11, 18],  // Major 7th with sharp 11
+        'Δ♭13': [0, 4, 7, 11, 20],  // Major 7th with flat 13
     };
     
     // Initialize the application
@@ -116,9 +144,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Rearrange the keyboard keys
         arrangeKeyboard();
-        
-        // Update key labels based on current notation preference
-        setKeyLabels();
     }
     
     // Arrange the keyboard keys based on the starting note
@@ -142,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const keyElement = document.createElement('div');
             keyElement.className = keyClass;
             keyElement.setAttribute('data-note', note);
-            keyElement.textContent = note;
+            // keyElement.textContent = note;
             
             // Add the key to the keyboard
             keyboard.appendChild(keyElement);
@@ -293,15 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Set labels for all keys based on current notation preference
-    function setKeyLabels() {
-        const allKeys = document.querySelectorAll('.white-key, .black-key');
-        allKeys.forEach(key => {
-            const note = key.getAttribute('data-note');
-            key.textContent = getDisplayName(note);
-        });
-    }
-    
     // Add event listeners
     function addEventListeners() {
         // New Chord button
@@ -340,9 +356,6 @@ document.addEventListener('DOMContentLoaded', function() {
             type: randomChordType,
             intervals: chordTypes[randomChordType]
         };
-        
-        // Update keyboard labels to match the current notation style
-        setKeyLabels();
         
         // Display the chord
         currentChordElement.textContent = `${getDisplayName(randomRoot)}${randomChordType}`;
